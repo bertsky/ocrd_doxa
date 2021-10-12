@@ -1,0 +1,43 @@
+{
+    "git_url": "https://github.com/bertsky/ocrd_doxa",
+    "version": "0.0.1",
+    "tools": {
+        "ocrd-doxa-binarize": {
+            "executable": "ocrd-doxa-binarize",
+            "categories": ["Image preprocessing"],
+            "steps": ["preprocessing/optimization/binarization"],
+            "description": "binarize via locally adaptive thresholding",
+            "input_file_grp": [
+                "OCR-D-IMG",
+                "OCR-D-SEG-PAGE",
+                "OCR-D-SEG-REGION",
+                "OCR-D-SEG-LINE"
+            ],
+            "output_file_grp": [
+                "OCR-D-IMG",
+                "OCR-D-SEG-PAGE",
+                "OCR-D-SEG-REGION",
+                "OCR-D-SEG-LINE"
+            ],
+            "parameters": {
+                "level-of-operation": {
+                    "type": "string",
+                    "enum": ["page", "region", "line"],
+                    "default": "page",
+                    "description": "PAGE XML hierarchy level to operate on"
+                },
+		"algorithm": {
+		    "type": "string",
+		    "enum": ["Otsu", "Bernsen", "Niblack", "Sauvola", "Wolf", "Gatos", "NICK", "Su", "Singh", "Bataineh", "ISauvola", "WAN"],
+		    "default": "ISauvola",
+		    "description": "Thresholding algorithm to use."
+		},
+                "parameters": {
+                    "type": "object",
+                    "default": {},
+                    "description": "Dictionary of algorithm-specific parameters. Unless overridden here, the following defaults are used: \nBernsen:\t{'window': 75, 'threshold': 100, 'contrast-limit': 25}\nNICK:\t{'window': 75, 'k': -0.2}\nNiblack:\t{'window': 75, 'k': 0.2}\nSingh:\t{'window': 75, 'k', 0.2}\nGatos:\t{'glyph': 60}\nSauvola:\t{'window': 75, 'k': 0.2}\nWolf:\t{'window': 75, 'k': 0.2}\nWAN:\t{'window': 75, 'k': 0.2}\nSu:\t{'window': 0 (based on stroke size), 'minN': windowSize (roughly based on size of window)}\n\n(window/glyph sizes are in px, threshold/limits in uint8 [0,255])"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,5 @@
+ocrd>=2.13
+click>=7.0
+numpy>=1.17.0
+pillow>=7.1.2
+doxapy>=0.9.1
