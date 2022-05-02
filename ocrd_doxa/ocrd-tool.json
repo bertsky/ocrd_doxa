@@ -20,6 +20,12 @@
                 "OCR-D-SEG-LINE"
             ],
             "parameters": {
+                "dpi": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "pixel density in dots per inch (overrides any meta-data in the images); disabled when zero",
+                    "default": 0
+		},
                 "level-of-operation": {
                     "type": "string",
                     "enum": ["page", "region", "line"],
