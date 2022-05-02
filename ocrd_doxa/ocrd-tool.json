@@ -1,6 +1,6 @@
 {
     "git_url": "https://github.com/bertsky/ocrd_doxa",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "tools": {
         "ocrd-doxa-binarize": {
             "executable": "ocrd-doxa-binarize",

@@ -68,11 +68,16 @@ Options:
   -w, --working-dir PATH          Working directory of local workspace
   -l, --log-level [OFF|ERROR|WARN|INFO|DEBUG|TRACE]
                                   Log level
+  -C, --show-resource RESNAME     Dump the content of processor resource RESNAME
+  -L, --list-resources            List names of processor resources
   -J, --dump-json                 Dump tool description as JSON and exit
   -h, --help                      This help message
   -V, --version                   Show version
 
 Parameters:
+   "dpi" [number - 0]
+    pixel density in dots per inch (overrides any meta-data in the
+    images); disabled when zero
    "level-of-operation" [string - "page"]
     PAGE XML hierarchy level to operate on
     Possible values: ["page", "region", "line"]
