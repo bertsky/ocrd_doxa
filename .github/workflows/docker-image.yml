@@ -5,12 +5,12 @@ on:
     branches: [ "master" ]
   workflow_dispatch:
     inputs:
-      docker_tagname:
+      docker-tagname:
         description: Tag name of the Docker image
-	default: 'ocrd/doxa'
+        default: 'ocrd/doxa'
 
 env:
-  DOCKER_TAGNAME: ${{ github.evenv.inputs.docker_tagname || 'ocrd/doxa' }}
+  DOCKER_TAGNAME: ${{ github.evenv.inputs.docker-tagname || 'ocrd/doxa' }}
 
 jobs:
 
