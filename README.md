@@ -1,4 +1,5 @@
 [![PyPI version](https://badge.fury.io/py/ocrd-doxa.svg)](https://badge.fury.io/py/ocrd-doxa)
+[![Docker Image CD](https://github.com/bertsky/ocrd_doxa/actions/workflows/docker-image.yml/badge.svg)](https://github.com/bertsky/ocrd_doxa/actions/workflows/docker-image.yml)
 
 # ocrd_wrap
 
