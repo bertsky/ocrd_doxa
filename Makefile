@@ -11,6 +11,7 @@ help:
 	@echo
 	@echo "    deps    Install only Python deps via pip"
 	@echo "    install Install full Python package via pip"
+	@echo "    docker  Build a Docker image $(DOCKER_TAG) from $(DOCKER_BASE_IMAGE)"
 
 # Install Python deps via pip
 deps:
@@ -27,4 +28,4 @@ docker:
 	--build-arg BUILD_DATE=$$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
 	-t $(DOCKER_TAG) .
 
-.PHONY: help deps install
+.PHONY: help deps install docker
