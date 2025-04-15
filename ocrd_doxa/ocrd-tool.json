@@ -1,24 +1,15 @@
 {
     "git_url": "https://github.com/bertsky/ocrd_doxa",
-    "version": "0.0.2",
+    "dockerhub": "ocrd/doxa",
+    "version": "0.0.3",
     "tools": {
         "ocrd-doxa-binarize": {
             "executable": "ocrd-doxa-binarize",
             "categories": ["Image preprocessing"],
             "steps": ["preprocessing/optimization/binarization"],
             "description": "binarize via locally adaptive thresholding",
-            "input_file_grp": [
-                "OCR-D-IMG",
-                "OCR-D-SEG-PAGE",
-                "OCR-D-SEG-REGION",
-                "OCR-D-SEG-LINE"
-            ],
-            "output_file_grp": [
-                "OCR-D-IMG",
-                "OCR-D-SEG-PAGE",
-                "OCR-D-SEG-REGION",
-                "OCR-D-SEG-LINE"
-            ],
+            "input_file_grp_cardinality": 1,
+            "output_file_grp_cardinality": 1,
             "parameters": {
                 "dpi": {
                     "type": "number",
