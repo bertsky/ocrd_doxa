@@ -1,36 +1,26 @@
 from __future__ import absolute_import
 
 import os.path
+from typing import Optional
 from PIL import Image
+
 import numpy as np
 import doxapy
 
-from ocrd import Processor
-from ocrd_utils import (
-    getLogger,
-    make_file_id,
-    assert_file_grp_cardinality,
-    MIMETYPE_PAGE
-)
-from ocrd_modelfactory import page_from_file
+from ocrd import Processor, OcrdPageResult, OcrdPageResultImage
 from ocrd_models.ocrd_page import (
-    LabelType, LabelsType,
-    MetadataItemType,
     AlternativeImageType,
-    to_xml
+    PageType,
+    OcrdPage
 )
-from .config import OCRD_TOOL
 
-TOOL = 'ocrd-doxa-binarize'
 
 class DoxaBinarize(Processor):
-
-    def __init__(self, *args, **kwargs):
-        kwargs['ocrd_tool'] = OCRD_TOOL['tools'][TOOL]
-        kwargs['version'] = OCRD_TOOL['version']
-        super(DoxaBinarize, self).__init__(*args, **kwargs)
+    @property
+    def executable(self):
+        return 'ocrd-doxa-binarize'
     
-    def process(self):
+    def process_page_pcgts(self, *input_pcgts: Optional[OcrdPage], page_id: Optional[str] = None) -> OcrdPageResult:
         """Performs binarization of segment or page images with DoxaPy on the workspace.
         
         Open and deserialize PAGE input files and their respective images,
@@ -50,85 +40,60 @@ class DoxaBinarize(Processor):
         
         Produce a new PAGE output file by serialising the resulting hierarchy.
         """
-        LOG = getLogger('processor.DoxaBinarize')
+        pcgts = input_pcgts[0]
+        result = OcrdPageResult(pcgts)
         oplevel = self.parameter['level-of-operation']
-        assert_file_grp_cardinality(self.input_file_grp, 1)
-        assert_file_grp_cardinality(self.output_file_grp, 1)
-        
-        for (n, input_file) in enumerate(self.input_files):
-            file_id = make_file_id(input_file, self.output_file_grp)
-            page_id = input_file.pageId or input_file.ID
-            LOG.info("INPUT FILE %i / %s", n, page_id)
-            
-            pcgts = page_from_file(self.workspace.download_file(input_file))
-            page = pcgts.get_Page()
-            metadata = pcgts.get_Metadata() # ensured by from_file()
-            metadata.add_MetadataItem(
-                MetadataItemType(type_="processingStep",
-                                 name=self.ocrd_tool['steps'][0],
-                                 value=TOOL,
-                                 Labels=[LabelsType(
-                                     externalModel="ocrd-tool",
-                                     externalId="parameters",
-                                     Label=[LabelType(type_=name,
-                                                      value=self.parameter[name])
-                                            for name in self.parameter.keys()])]))
-            
-            for page in [page]:
-                page_image, page_coords, page_image_info = self.workspace.image_from_page(
-                    page, page_id, feature_filter='binarized')
-                if self.parameter['dpi'] > 0:
-                    dpi = self.parameter['dpi']
-                    LOG.info("Page '%s' images will use %d DPI from parameter override", page_id, dpi)
-                elif page_image_info.resolution != 1:
-                    dpi = page_image_info.resolution
-                    if page_image_info.resolutionUnit == 'cm':
-                        dpi = round(dpi * 2.54)
-                    LOG.info("Page '%s' images will use %d DPI from image meta-data", page_id, dpi)
-                else:
-                    dpi = 300
-                    LOG.info("Page '%s' images will use 300 DPI from fall-back", page_id)
-                
-                if oplevel == 'page':
+        page = pcgts.get_Page()
+        for page in [page]:
+            page_image, page_coords, page_image_info = self.workspace.image_from_page(
+                page, page_id, feature_filter='binarized')
+            if self.parameter['dpi'] > 0:
+                dpi = self.parameter['dpi']
+                self.logger.info("Page '%s' images will use %d DPI from parameter override", page_id, dpi)
+            elif page_image_info.resolution != 1:
+                dpi = page_image_info.resolution
+                if page_image_info.resolutionUnit == 'cm':
+                    dpi = round(dpi * 2.54)
+                self.logger.info("Page '%s' images will use %d DPI from image meta-data", page_id, dpi)
+            else:
+                dpi = 300
+                self.logger.info("Page '%s' images will use 300 DPI from fall-back", page_id)
+
+            if oplevel == 'page':
+                result.images.append(
                     self._process_segment(page, page_image, page_coords,
-                                          "page '%s'" % page_id, input_file.pageId,
-                                          file_id + '.IMG-BIN')
-                    continue
-                regions = page.get_AllRegions(classes=['Text'])
-                if not regions:
-                    LOG.warning("Page '%s' contains no text regions", page_id)
-                for region in regions:
-                    region_image, region_coords = self.workspace.image_from_segment(
-                        region, page_image, page_coords, feature_filter='binarized')
-                    if oplevel == 'region':
+                                          "page '%s'" % page_id)
+                )
+                continue
+            regions = page.get_AllRegions(classes=['Text'])
+            if not regions:
+                self.logger.warning("Page '%s' contains no text regions", page_id)
+            for region in regions:
+                region_image, region_coords = self.workspace.image_from_segment(
+                    region, page_image, page_coords, feature_filter='binarized')
+                if oplevel == 'region':
+                    result.images.append(
                         self._process_segment(region, region_image, region_coords,
-                                              "region '%s'" % region.id, None,
-                                              file_id + '.IMG-BIN_' + region.id)
-                        continue
-                    lines = region.get_TextLine()
-                    if not lines:
-                        LOG.warning("Region '%s' contains no text lines", region.id)
-                    for line in lines:
-                        line_image, line_coords = self.workspace.image_from_segment(
-                            line, region_image, region_coords, feature_filter='binarized')
+                                              "region '%s'" % region.id)
+                        )
+                    continue
+                lines = region.get_TextLine()
+                if not lines:
+                    self.logger.warning("Region '%s' contains no text lines", region.id)
+                for line in lines:
+                    line_image, line_coords = self.workspace.image_from_segment(
+                        line, region_image, region_coords, feature_filter='binarized')
+                    result.images.append(
                         self._process_segment(line, line_image, line_coords,
-                                              "line '%s'" % line.id, None,
-                                              file_id + '.IMG-BIN_' + line.id)
-            
-            pcgts.set_pcGtsId(file_id)
-            self.workspace.add_file(
-                ID=file_id,
-                file_grp=self.output_file_grp,
-                pageId=input_file.pageId,
-                mimetype=MIMETYPE_PAGE,
-                local_filename=os.path.join(self.output_file_grp,
-                                            file_id + '.xml'),
-                content=to_xml(pcgts))
+                                              "line '%s'" % line.id)
+                    )
+        return result
     
-    def _process_segment(self, segment, image, coords, where, page_id, file_id):
-        LOG = getLogger('processor.DoxaBinarize')
-        features = coords['features'] # features already applied to image
-        features += ',binarized'
+    def _process_segment(self, segment, image, coords, where):
+        features = coords['features'] or '' # features already applied to image
+        if features:
+            features += ','
+        features += 'binarized'
         array = np.array(image.convert('L'))
         algorithm = self.parameter['algorithm']
         algorithm = {"Otsu": doxapy.Binarization.Algorithms.OTSU,
@@ -147,11 +112,8 @@ class DoxaBinarize(Processor):
         doxapy.Binarization.update_to_binary(algorithm, array, self.parameter['parameters'])
         image = Image.fromarray(array)
         # annotate results
-        file_path = self.workspace.save_image_file(
-            image,
-            file_id,
-            file_grp=self.output_file_grp,
-            page_id=page_id)
-        segment.add_AlternativeImage(AlternativeImageType(
-            filename=file_path, comments=features))
-        LOG.debug("Binarized image for %s saved as '%s'", where, file_path)
+        image_ref = AlternativeImageType(comments=features)
+        segment.add_AlternativeImage(image_ref)
+        suffix = '' if isinstance(segment, PageType) else segment.id
+        suffix += '.IMG-BIN'
+        return OcrdPageResultImage(image, suffix, image_ref)
