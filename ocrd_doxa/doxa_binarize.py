@@ -76,7 +76,7 @@ class DoxaBinarize(Processor):
                         self._process_segment(region, region_image, region_coords,
                                               "region '%s'" % region.id)
                         )
-                        continue
+                    continue
                 lines = region.get_TextLine()
                 if not lines:
                     self.logger.warning("Region '%s' contains no text lines", region.id)
