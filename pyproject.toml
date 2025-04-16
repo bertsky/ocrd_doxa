@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel", "setuptools-ocrd"]
+
+[project]
+name = "ocrd_doxa"
+authors = [
+    {name = "Robert Sachunsky", email = "sachunsky@informatik.uni-leipzig.de"},
+]
+description = "OCR-D wrapper for DoxaPy image binarization via locally adaptive thresholding"
+readme = "README.md"
+license.text = "MIT"
+requires-python = ">=3.8"
+
+dynamic = ["version", "dependencies"]
+
+# https://pypi.org/classifiers/
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Other Audience",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Text Processing",
+]
+
+[project.scripts]
+ocrd-doxa-binarize = "ocrd_doxa.cli:ocrd_doxa_binarize"
+
+[project.urls]
+Homepage = "https://github.com/bertsky/ocrd_doxa"
+Repository = "https://github.com/bertsky/ocrd_doxa.git"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+optional-dependencies.test = {file = ["requirements_test.txt"]}
+
+[tool.setuptools]
+packages = ["ocrd_doxa"]
+package-data = {"*" = ["ocrd-tool.json"]}
+
+[tool.coverage.run]
+branch = true
+source = ["ocrd_doxa"]
