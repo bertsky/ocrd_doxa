@@ -109,8 +109,15 @@ class DoxaBinarize(Processor):
                      "ISauvola": doxapy.Binarization.Algorithms.ISAUVOLA,
                      "WAN": doxapy.Binarization.Algorithms.WAN,
                      }.get(algorithm)
-        doxapy.Binarization.update_to_binary(algorithm, array, self.parameter['parameters'])
-        image = Image.fromarray(array)
+        # crashes (Fatal Python error: Aborted) with allocation and segfault:
+        #doxapy.Binarization.update_to_binary(algorithm, array, self.parameter['parameters'])
+        #image = Image.fromarray(array)
+        # crashes less often:
+        binary = np.empty(array.shape, array.dtype)
+        binarizer = doxapy.Binarization(algorithm)
+        binarizer.initialize(array)
+        binarizer.to_binary(binary, self.parameter['parameters'])
+        image = Image.fromarray(np.array(binary))
         # annotate results
         image_ref = AlternativeImageType(comments=features)
         segment.add_AlternativeImage(image_ref)
