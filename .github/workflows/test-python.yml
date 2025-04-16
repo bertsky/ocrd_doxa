@@ -34,7 +34,7 @@ jobs:
         uses: lhotari/action-upterm@v1
       - name: Install dependencies
         run: make deps
-      - name: make install
+      - run: make install
       - name: Run tests
         run: |
           make deps-test
