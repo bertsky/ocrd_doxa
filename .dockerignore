@@ -1,0 +1,5 @@
+tests
+repo
+dist
+build
+*.egg-info
