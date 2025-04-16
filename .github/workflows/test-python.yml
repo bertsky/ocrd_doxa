@@ -1,0 +1,41 @@
+# Continuous integration for ocrd_pagetopdf
+
+name: Python CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      upterm-session:
+        description: 'Run SSH login server for debugging'
+        default: False
+        type: boolean
+
+jobs:
+  ci_test:
+    name: CI build and test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Setup upterm session
+        # interactive SSH logins for debugging
+        if: github.event.inputs.upterm-session == 'true'
+        uses: lhotari/action-upterm@v1
+      - name: Install dependencies
+        run: make deps
+      - run: make install
+      - name: Run tests
+        run: |
+          make deps-test
+          make test
