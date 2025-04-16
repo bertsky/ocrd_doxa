@@ -1,4 +1,5 @@
 [![PyPI version](https://badge.fury.io/py/ocrd-doxa.svg)](https://badge.fury.io/py/ocrd-doxa)
+[![Python CI](https://github.com/bertsky/ocrd_doxa/actions/workflows/test-python.yml/badge.svg)](https://github.com/bertsky/ocrd_doxa/actions/workflows/test-python.yml)
 [![Docker Image CD](https://github.com/bertsky/ocrd_doxa/actions/workflows/docker-image.yml/badge.svg)](https://github.com/bertsky/ocrd_doxa/actions/workflows/docker-image.yml)
 
 # ocrd_wrap
@@ -105,5 +106,7 @@ Parameters:
 
 ## Testing
 
-none yet
+    make deps-test
+    make test
+
 
