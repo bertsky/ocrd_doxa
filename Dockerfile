@@ -37,7 +37,7 @@ RUN ocrd ocrd-tool ocrd-tool.json dump-tools > $(dirname $(ocrd bashlib filename
 # prepackage ocrd-all-module-dir.json
 RUN ocrd ocrd-tool ocrd-tool.json dump-module-dirs > $(dirname $(ocrd bashlib filename))/ocrd-all-module-dir.json
 # install everything and reduce image size
-RUN pip install . rm -rf /build/ocrd_doxa
+RUN pip install . && rm -rf /build/ocrd_doxa
 # smoke test
 RUN ocrd-doxa-binarize -h
 
